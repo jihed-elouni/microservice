@@ -12,15 +12,36 @@ services:
             "eureka.server.maxThreadsForPeerReplication":0}'
 
   api-gateway:
-    image: jihedesprit/apigateway
+    image: alaedeen/apigateway
     ports:
-      - 8080:8080
+      - 8090:8090
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
     depends_on:
       - eureka-server
 
-  service:
+  bank-profile-app:
+    image: alaedeen/profiles
+    ports:
+      - 8086:8086
+    depends_on:
+      - mysql_db
+      - eureka-server
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql_db:3306/bank_profile_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+    restart: on-failure
+
+  mysql_db:
+    image: mysql:latest
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=bank_profile_db
+
+  bank-transaction-app:
     image: jihedesprit/transactions
     ports:
       - 8085:8085
