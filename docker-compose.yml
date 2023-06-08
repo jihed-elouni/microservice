@@ -1,0 +1,42 @@
+version: "3.8"
+services:
+  eureka-server:
+    image: jihedesprit/eurekaserver
+    ports:
+      - 8761:8761
+    environment:
+      SPRING_APPLICATION_JSON: '{
+            "spring.application.name":"eureka-service",
+            "eureka.client.register-with-eureka":false,
+            "eureka.client.fetch-registry":false,
+            "eureka.server.maxThreadsForPeerReplication":0}'
+
+  api-gateway:
+    image: jihedesprit/apigateway
+    ports:
+      - 8080:8080
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+    depends_on:
+      - eureka-server
+
+  service:
+    image: jihedesprit/transactions
+    ports:
+      - 8085:8085
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/transactiondb
+    depends_on:
+      - eureka-server
+      - postgres
+    restart: on-failure
+
+  postgres:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=transactiondb
