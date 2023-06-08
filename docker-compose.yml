@@ -20,6 +20,15 @@ services:
     depends_on:
       - eureka-server
 
+  api-gateway-write:
+    image: alaedeen/apigatewaywrite
+    ports:
+      - 8095:8095
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+    depends_on:
+      - eureka-server
+
   bank-profile-app:
     image: alaedeen/profiles
     ports:
